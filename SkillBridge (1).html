@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SkillBridge</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{navy:{900:'#081426',800:'#0f2140',700:'#1a3560'},cy:{400:'#22d3ee',500:'#06b6d4'}}}}}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{background:linear-gradient(180deg,#e6eefa 0,#f1f5f9 360px) fixed,#f1f5f9;color:#0f172a;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+.fade{animation:f .3s ease}@keyframes f{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.bar{transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 1px 2px rgba(15,23,42,.04),0 4px 14px rgba(15,23,42,.04);transition:box-shadow .2s,transform .2s}
+.card.hv:hover{box-shadow:0 8px 24px rgba(15,23,42,.09);transform:translateY(-1px)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const {useState,useEffect}=React;
+const REQ={"HTML/CSS":4,"JavaScript":4,"React":4,"Java":3,"Spring Boot":3,"SQL":3,"Git/GitHub":3,"REST APIs":4};
+const DEMO={"HTML/CSS":4,"JavaScript":3,"React":1,"Java":4,"Spring Boot":1,"SQL":2,"Git/GitHub":2,"REST APIs":2};
+const FINAL={"HTML/CSS":4,"JavaScript":4,"React":4,"Java":3,"Spring Boot":3,"SQL":2,"Git/GitHub":2,"REST APIs":2};
+const ROLES=["Full-Stack Developer","Frontend Developer","Backend Developer","Data Analyst","AI/ML Engineer","Cybersecurity Analyst"];
+const DEMO_USER={name:"Alex Kumar",email:"",college:"ABC Engineering College",degree:"B.Tech Computer Science",year:"2nd Year",role:"Full-Stack Developer",level:"Beginner",goal:"Become internship/job ready"};
+const YEARS=["1st Year","2nd Year","3rd Year","4th Year","Graduate"],LEVELS=["Beginner","Intermediate","Advanced"],GOALS=["Become internship/job ready","Get a first internship","Switch into a tech role","Prepare for campus placements"];
+const rd=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
+const wr=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const QS=[
+["HTML/CSS","How do you build a responsive layout?",["I haven't yet","Fixed widths and some media queries","Flexbox/Grid with media queries","Grid/Flexbox, fluid type, accessibility checks"]],
+["JavaScript","What best describes your use of async JavaScript?",["Never used promises","Know callbacks only","Comfortable with promises and async/await","Handle error flows, closures and the event loop"]],
+["React","What have you built with React?",["Nothing yet","Followed a tutorial","Small apps with state and props","Apps with hooks, context and routing"]],
+["Java","How comfortable are you with Java OOP?",["Beginner syntax only","Classes and objects","Inheritance, interfaces, collections","Streams, generics, design patterns"]],
+["Spring Boot","Have you built a Spring Boot service?",["No","Ran a starter project","Built simple controllers","Built REST services with JPA and validation"]],
+["SQL","Which SQL can you write?",["None","Basic SELECT","JOINs and GROUP BY","Subqueries, indexes, schema design"]],
+["Git/GitHub","How do you use Git?",["Not used","Commit and push","Branches and pull requests","Rebasing, conflict resolution, code review"]],
+["REST APIs","How do you work with REST APIs?",["Unsure what they are","Called one API","Consume APIs with fetch and handle errors","Design endpoints, status codes and auth"]]];
+const NAV=["Dashboard","Career Goal","Skill Assessment","Skill Gaps","Roadmap","Skill Proof","Job Readiness","Profile"];
+const IC={"Dashboard":"M4 4h6v7H4zM14 4h6v4h-6zM14 12h6v8h-6zM4 15h6v5H4z","Career Goal":"M12 3a9 9 0 100 18 9 9 0 000-18zM12 8a4 4 0 100 8 4 4 0 000-8z","Skill Assessment":"M9 4h6v3H9zM7 5H5v15h14V5h-2M9 14l2 2 4-4","Skill Gaps":"M5 20V10M12 20V4M19 20v-7","Roadmap":"M6 4a2 2 0 100 4 2 2 0 000-4zM18 16a2 2 0 100 4 2 2 0 000-4zM8 6h5a3 3 0 010 6h-2a3 3 0 000 6h5","Skill Proof":"M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4","Job Readiness":"M3 17l6-6 4 4 8-8M15 7h6v6","Profile":"M12 4a4 4 0 100 8 4 4 0 000-8zM4 20c0-4 4-6 8-6s8 2 8 6"};
+const Icon=({n,c="w-5 h-5"})=><svg className={c} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={IC[n]}/></svg>;
+const status=(r,c)=>r-c<=0?"Strong":r-c===1?"Developing":"Critical";
+const COL={Strong:"bg-emerald-500",Developing:"bg-amber-400",Critical:"bg-rose-500"};
+const TXT={Strong:"text-emerald-700 bg-emerald-50 ring-emerald-200",Developing:"text-amber-700 bg-amber-50 ring-amber-200",Critical:"text-rose-700 bg-rose-50 ring-rose-200"};
+const pct=s=>Math.round(Object.keys(REQ).reduce((a,k)=>a+Math.min(s[k],REQ[k]),0)/Object.values(REQ).reduce((a,b)=>a+b,0)*100);
+const label=p=>p>=85?"Job Ready":p>=60?"Almost Ready":"Building Foundations";
+const useMount=v=>{const [w,setW]=useState(0);useEffect(()=>{const t=setTimeout(()=>setW(v),40);return()=>clearTimeout(t)},[v]);return w};
+const Card=({children,c="",hv})=><div className={"card p-5 "+(hv?"hv ":"")+c}>{children}</div>;
+const Btn=({children,onClick,v="p",c="",...r})=><button onClick={onClick} {...r} className={"px-4 py-2.5 rounded-xl text-sm font-semibold transition active:scale-[.98] disabled:opacity-40 "+(v==="p"?"bg-blue-600 text-white shadow-sm hover:bg-blue-700":"bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400")+" "+c}>{children}</button>;
+const Title=({t,s})=><div className="mb-7"><h1 className="text-3xl font-extrabold tracking-tight text-navy-900">{t}</h1>{s&&<p className="text-sm text-slate-500 mt-1.5">{s}</p>}</div>;
+const Eyebrow=({children})=><p className="text-[11px] font-semibold tracking-widest uppercase text-slate-500">{children}</p>;
+const Prog=({v,c="bg-blue-600",h="h-2"})=>{const w=useMount(v);return <div className={h+" bg-slate-100 rounded-full overflow-hidden"}><div className={"bar h-full rounded-full "+c} style={{width:w+"%"}}/></div>};
+const Ring=({v,size=132,sub})=>{const w=useMount(v),R=52,C=2*Math.PI*R;return <div className="relative shrink-0" style={{width:size,height:size}}><svg viewBox="0 0 120 120" className="w-full h-full -rotate-90"><circle cx="60" cy="60" r={R} fill="none" stroke="#e8eef6" strokeWidth="10"/><circle cx="60" cy="60" r={R} fill="none" stroke="#2563eb" strokeWidth="10" strokeLinecap="round" strokeDasharray={C} strokeDashoffset={C*(1-w/100)} style={{transition:"stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1)"}}/></svg><div className="absolute inset-0 grid place-items-center text-center"><div><p className="text-3xl font-extrabold text-navy-900 leading-none">{v}%</p>{sub&&<p className="text-[10px] text-slate-500 mt-1">{sub}</p>}</div></div></div>};
+const Badge=({s})=><span className={"px-2.5 py-0.5 rounded-full text-xs font-medium ring-1 "+TXT[s]}>{s==="Critical"?"Critical Gap":s}</span>;
+const Logo=({light})=><span className={"font-extrabold text-xl tracking-tight "+(light?"text-white":"text-navy-900")}><span className="inline-block w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-cy-500 align-middle mr-2 relative"><svg viewBox="0 0 24 24" className="absolute inset-0 p-1.5 text-white" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M3 17c4-9 14-9 18 0M7 17V11M12 17V9M17 17v-6"/></svg></span>Skill<span className="text-cy-400">Bridge</span></span>;
+
+const Avatar=({name,c="w-9 h-9 text-sm"})=><span className={"rounded-full bg-gradient-to-br from-blue-600 to-cy-500 text-white font-bold grid place-items-center shrink-0 "+c}>{(name||"A").trim()[0].toUpperCase()}</span>;
+function AuthShell({children}){return <div className="min-h-screen grid place-items-center p-4 fade"><div className="w-full max-w-4xl grid md:grid-cols-5 card overflow-hidden shadow-xl">
+<div className="md:col-span-2 bg-navy-900 text-white p-8 flex flex-col justify-between gap-10"><Logo light/><div><p className="text-[11px] tracking-widest font-semibold text-cy-400">CAREER INTELLIGENCE PLATFORM</p><p className="text-2xl font-extrabold leading-snug mt-3">Know your gap. Prove your skills. Become job-ready.</p></div><p className="text-xs text-slate-400">Prototype · data stays on this device</p></div>
+<div className="md:col-span-3 p-6 md:p-9">{children}</div></div></div>}
+function Welcome({go,guest}){return <AuthShell><div className="h-full flex flex-col justify-center"><p className="text-[11px] tracking-widest font-semibold text-blue-600">WELCOME</p><h1 className="text-3xl font-extrabold text-navy-900 mt-2">SkillBridge</h1><p className="text-slate-500 mt-1">Career Intelligence Platform</p><p className="mt-5 text-slate-600">Know your gap. Prove your skills. Become job-ready.</p>
+<div className="mt-8 space-y-3"><Btn onClick={()=>go("Login")} c="w-full !py-3">Get Started</Btn><Btn v="s" onClick={guest} c="w-full !py-3">Continue as Guest</Btn></div>
+<button onClick={()=>go("Landing")} className="mt-5 text-sm text-slate-500 hover:text-blue-600 text-left">See product overview →</button></div></AuthShell>}
+function Login({go,guest,onLogin}){
+const [em,setEm]=useState("");const [pw,setPw]=useState("");const [err,setErr]=useState("");
+const submit=()=>{if(!em.trim()||!pw){setErr("Enter your email and password.");return}
+const p=rd("sb_profile");if(p&&p.email&&p.email.toLowerCase()===em.trim().toLowerCase()){onLogin(p)}else setErr("No profile found for this email. Create a profile to continue.")};
+const inp="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
+return <AuthShell><p className="text-[11px] tracking-widest font-semibold text-blue-600">LOGIN / CREATE PROFILE</p><h1 className="text-2xl font-extrabold text-navy-900 mt-1 mb-5">Sign in to SkillBridge</h1>
+<label className="text-sm font-medium">Email</label><input value={em} onChange={e=>setEm(e.target.value)} placeholder="alex@college.edu" className={inp+" mt-1 mb-3"}/>
+<label className="text-sm font-medium">Password</label><input type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="Password" className={inp+" mt-1"}/>
+{err&&<p className="text-xs text-rose-600 mt-2">{err}</p>}
+<Btn onClick={submit} c="w-full mt-4 !py-3">Sign In</Btn>
+<div className="flex items-center gap-3 my-5 text-xs text-slate-400"><span className="flex-1 h-px bg-slate-200"/>New to SkillBridge?<span className="flex-1 h-px bg-slate-200"/></div>
+<Btn v="s" onClick={()=>go("Signup",em)} c="w-full">Create Profile</Btn>
+<button onClick={guest} className="mt-4 w-full text-sm text-blue-600 font-medium hover:underline">Continue as Guest</button>
+<p className="text-[11px] text-slate-400 mt-4">Prototype sign-in: no server, no email verification. Profiles are stored in this browser only.</p></AuthShell>}
+function ProfileForm({init,onSubmit,label,onCancel,reqEmail}){
+const [f,setF]=useState(init);const [e,setE]=useState({});
+const inp=k=>"w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 "+(e[k]?"border-rose-400":"border-slate-300");
+const lab=(k,l,node)=><div><label className="text-sm font-medium text-slate-700">{l}</label><div className="mt-1">{node}</div>{e[k]&&<p className="text-xs text-rose-600 mt-1">{e[k]}</p>}</div>;
+const txt=(k,l,ph)=>lab(k,l,<input value={f[k]} onChange={ev=>setF({...f,[k]:ev.target.value})} placeholder={ph} className={inp(k)}/>);
+const sel=(k,l,opts)=>lab(k,l,<select value={f[k]} onChange={ev=>setF({...f,[k]:ev.target.value})} className={inp(k)}>{opts.map(o=><option key={o}>{o}</option>)}</select>);
+const submit=()=>{const x={};
+if(!f.name.trim())x.name="Full name is required";
+if(!f.college.trim())x.college="College / University is required";
+if(!f.degree.trim())x.degree="Degree is required";
+if(reqEmail&&!f.email.trim())x.email="Email is required";
+if(f.email.trim()&&!/^\S+@\S+\.\S+$/.test(f.email.trim()))x.email="Enter a valid email";
+setE(x);if(Object.keys(x).length)return;
+onSubmit({...f,name:f.name.trim(),email:f.email.trim(),college:f.college.trim(),degree:f.degree.trim()});};
+return <div><div className="grid sm:grid-cols-2 gap-4">{txt("name","Full Name","Alex Kumar")}{txt("email","Email","alex@college.edu")}{txt("college","College / University","ABC Engineering College")}{txt("degree","Degree","B.Tech Computer Science")}{sel("year","Year of Study",YEARS)}{sel("role","Target Career Role",ROLES)}{sel("level","Current Skill Level",LEVELS)}{sel("goal","Learning Goal",GOALS)}</div>
+<div className="flex flex-wrap gap-3 mt-6"><Btn onClick={submit}>{label}</Btn>{onCancel&&<Btn v="s" onClick={onCancel}>Cancel</Btn>}</div></div>}
+function Signup({go,email,guest,onCreate}){return <AuthShell><p className="text-[11px] tracking-widest font-semibold text-blue-600">CREATE PROFILE</p><h1 className="text-2xl font-extrabold text-navy-900 mt-1 mb-5">Build your career profile</h1>
+<ProfileForm reqEmail init={{...DEMO_USER,name:"",email:email||"",college:"",degree:""}} label="Create My Career Profile" onSubmit={onCreate}/>
+<div className="flex justify-between mt-5 text-sm"><button onClick={()=>go("Login")} className="text-slate-500 hover:text-blue-600">← Back to sign in</button><button onClick={guest} className="text-blue-600 font-medium hover:underline">Continue as Guest</button></div></AuthShell>}
+
+function Landing({go}){
+const B=[["01","Identify Skill Gaps","Compare what you know with what your target role demands, skill by skill."],["02","Personalize Your Roadmap","Priorities come from your largest gaps, not a generic course list."],["03","Prove Your Skills","Learn, practice, build and verify, so employers see evidence."]];
+const K=[["TARGET ROLE","Full-Stack Developer","text-navy-900 text-base"],["JOB READINESS","64%","text-blue-600"],["CRITICAL GAPS","2","text-rose-600"],["ROADMAP","25%","text-cy-500"]];
+return <div className="min-h-screen fade">
+<header className="max-w-6xl mx-auto px-5 py-5 flex justify-between items-center"><Logo/><button onClick={()=>go("Career Goal")} className="text-sm font-medium text-slate-600 hover:text-blue-600">Explore roles</button></header>
+<section className="max-w-6xl mx-auto px-5 pt-10 pb-12 grid lg:grid-cols-2 gap-10 items-center">
+<div><p className="inline-block text-[11px] font-semibold tracking-widest text-blue-700 bg-blue-100/70 rounded-full px-3 py-1 mb-5">STUDENT CAREER INTELLIGENCE PLATFORM</p>
+<h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-[1.06] text-navy-900">Know your gap.<br/>Prove your skills.<br/><span className="text-blue-600">Become job-ready.</span></h1>
+<p className="mt-6 text-lg text-slate-600 max-w-xl">Compare your current skills with real role requirements, follow a personalized roadmap, and prove your readiness with project evidence.</p>
+<div className="mt-8 flex flex-wrap gap-3"><Btn onClick={()=>go("Career Goal")} c="!px-6 !py-3">Analyze My Skills</Btn><Btn v="s" onClick={()=>go("Career Goal")} c="!px-6 !py-3">Explore Career Roles</Btn></div></div>
+<div className="card p-6 shadow-xl"><div className="flex items-center justify-between mb-5"><Eyebrow>Alex · Live preview</Eyebrow><span className="text-[10px] font-bold tracking-wider text-emerald-700 bg-emerald-50 rounded px-2 py-0.5">DEMO</span></div>
+<div className="grid grid-cols-2 gap-3">{K.map(k=><div key={k[0]} className="rounded-xl bg-slate-50 border border-slate-100 p-4"><Eyebrow>{k[0]}</Eyebrow><p className={"font-extrabold mt-1 "+(k[2].includes("text-base")?k[2]:"text-3xl "+k[2])}>{k[1]}</p></div>)}</div>
+<div className="mt-5"><Prog v={64} c="bg-gradient-to-r from-blue-600 to-cy-500"/></div></div></section>
+<section className="max-w-6xl mx-auto px-5 grid md:grid-cols-3 gap-4">{B.map(b=><Card key={b[0]} hv><p className="text-sm font-bold text-cy-500 mb-3">{b[0]}</p><h3 className="font-semibold text-lg text-navy-900">{b[1]}</h3><p className="text-slate-600 mt-1 text-sm">{b[2]}</p></Card>)}</section>
+<div className="max-w-6xl mx-auto px-5 py-12 flex flex-wrap justify-center gap-2 text-[11px] font-semibold tracking-wider text-slate-500">{["CAREER GOAL","ASSESS","IDENTIFY GAPS","LEARN","PRACTICE","BUILD","PROVE","JOB READY"].map((x,n)=><span key={x} className="flex items-center gap-2">{n>0&&<span className="text-slate-300">→</span>}<span className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg shadow-sm">{x}</span></span>)}</div></div>}
+function Dash({skills,go,st,rm,user}){
+const p=pct(skills),ks=Object.keys(REQ),c=s=>ks.filter(k=>status(REQ[k],skills[k])===s).length;
+const rp=Math.round(rm/8*100);
+const kp=[["JOB READINESS",p+"%","border-l-blue-600"],["CRITICAL GAPS",c("Critical"),"border-l-rose-500"],["SKILLS DEVELOPING",c("Developing"),"border-l-amber-400"],["ROADMAP PROGRESS",rp+"%","border-l-cy-500"]];
+const top=ks.filter(k=>REQ[k]>skills[k]).sort((a,b)=>(REQ[b]-skills[b])-(REQ[a]-skills[a])||skills[a]-skills[b]||REQ[b]-REQ[a]).slice(0,3);
+const nx=skills.React<4?["React Fundamentals","5 days"]:["Spring Boot Fundamentals","5 days"];
+return <div className="fade"><div className="mb-7"><h1 className="text-3xl font-extrabold tracking-tight text-navy-900">Welcome back, {user.name.split(" ")[0]} 👋</h1><p className="text-sm text-slate-500 mt-1.5">Here's your current path toward becoming a {user.role}.</p></div>
+<div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">{kp.map(k=><Card key={k[0]} c={"border-l-4 "+k[2]} hv><Eyebrow>{k[0]}</Eyebrow><p className="text-3xl font-extrabold text-navy-900 mt-1">{k[1]}</p></Card>)}</div>
+<div className="grid lg:grid-cols-3 gap-4 mb-4">
+<Card c="lg:col-span-2" hv><h3 className="font-semibold text-navy-900 mb-4">Your Career Readiness</h3><div className="flex items-center gap-6"><Ring v={p} size={140} sub={label(p)}/><div className="flex-1"><p className="text-xl font-bold text-navy-900">{label(p)}</p><p className="text-sm text-slate-500 mt-1">Measured across {ks.length} skills required for {user.role} roles.</p><button onClick={()=>go("Job Readiness")} className="text-sm text-blue-600 font-medium mt-3 hover:underline">See breakdown →</button></div></div></Card>
+<Card c="!bg-navy-900 !border-navy-800 text-white" hv><Eyebrow><span className="text-cy-400">NEXT BEST ACTION</span></Eyebrow><p className="text-xl font-bold mt-2">{nx[0]}</p><p className="text-xs text-cy-400 mt-0.5">{nx[1]}</p><p className="text-sm text-slate-300 mt-2">Close your highest-priority skill gap.</p><button onClick={()=>go("Roadmap")} className="mt-4 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-500 transition">Continue Roadmap</button></Card></div>
+<Card><h3 className="font-semibold text-navy-900 mb-3">Priority Skill Gaps</h3>{top.length?<div className="divide-y divide-slate-100">{top.map(k=>{const s=status(REQ[k],skills[k]);return <button key={k} onClick={()=>go("Skill Gaps")} className="w-full flex flex-wrap items-center justify-between gap-2 py-3 text-left hover:bg-slate-50 rounded-lg px-2 -mx-2 transition"><span className="font-medium text-navy-900">{k}</span><span className="flex items-center gap-4 text-xs text-slate-500"><span>Current {skills[k]}/5</span><span>Required {REQ[k]}/5</span><Badge s={s}/></span></button>})}</div>:<p className="text-sm text-emerald-600">No open gaps. Great work.</p>}</Card></div>}
+function Goal({role,setRole,go}){
+const [jd,setJd]=useState("");const [open,setOpen]=useState(false);
+return <div className="fade max-w-3xl"><Title t="What role are you targeting?" s="Benchmark your skills against the requirements of your selected role."/>
+<div className="grid sm:grid-cols-2 gap-3">{ROLES.map(r=>{const on=r===role;return <button key={r} onClick={()=>setRole(r)} className={"card hv text-left p-4 flex items-center gap-3 "+(on?"!border-blue-600 ring-2 ring-blue-600 bg-blue-50":"")}><span className={"w-5 h-5 rounded-full border-2 grid place-items-center text-[10px] text-white shrink-0 "+(on?"bg-blue-600 border-blue-600":"border-slate-300")}>{on?"✓":""}</span><span className="font-semibold text-navy-900">{r}</span>{r==="Full-Stack Developer"&&<span className="ml-auto text-[10px] font-bold tracking-wider text-cy-500">DEMO</span>}</button>})}</div>
+{role!=="Full-Stack Developer"&&<p className="text-xs text-amber-700 bg-amber-50 rounded-lg p-2 mt-3">The demo is fully configured for Full-Stack Developer. Other roles reuse its skill model.</p>}
+<Card c="mt-4"><button onClick={()=>setOpen(!open)} className="text-sm text-blue-600 font-medium hover:underline">{open?"Hide":"Paste Job Description"}</button>
+{open&&<textarea value={jd} onChange={e=>setJd(e.target.value)} rows={5} placeholder="Paste a job description to extract required skills" className="mt-3 w-full border border-slate-300 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>}</Card>
+<Btn onClick={()=>go("Skill Assessment")} c="mt-5">Continue to Assessment</Btn></div>}
+function Assess({onDone}){
+const [i,setI]=useState(0);const [a,setA]=useState({});const [done,setDone]=useState(false);const q=QS[i];
+const next=()=>{if(i<QS.length-1)setI(i+1);else{const s={};QS.forEach((x,n)=>s[x[0]]=a[n]+1);setDone(true);setTimeout(()=>onDone(s),1100);}};
+if(done)return <div className="fade max-w-2xl"><Card c="text-center py-12"><span className="w-14 h-14 rounded-full bg-emerald-500 text-white text-2xl grid place-items-center mx-auto mb-4">✓</span><h2 className="text-2xl font-extrabold text-navy-900">Assessment Complete</h2><p className="text-sm text-slate-500 mt-1">Preparing your skill gap analysis…</p></Card></div>;
+return <div className="fade max-w-2xl"><Title t="Skill Assessment" s="Answer honestly. This sets your starting levels."/>
+<Card c="p-6"><div className="flex justify-between text-sm text-slate-500 mb-2"><span className="font-medium text-navy-900">Question {i+1} of {QS.length}</span><span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-medium">{q[0]}</span></div><Prog v={(i+1)/QS.length*100}/>
+<h2 className="text-2xl font-bold mt-7 mb-5 text-navy-900">{q[1]}</h2>
+<div className="space-y-2.5">{q[2].map((o,n)=>{const on=a[i]===n;return <button key={n} onClick={()=>setA({...a,[i]:n})} className={"w-full flex items-center gap-3 text-left px-4 py-3.5 rounded-xl border text-sm transition duration-200 "+(on?"border-blue-600 bg-blue-50 font-medium ring-1 ring-blue-600 scale-[1.01]":"border-slate-200 bg-white hover:border-slate-400 hover:bg-slate-50")}><span className={"w-5 h-5 rounded-full border-2 grid place-items-center text-[10px] text-white shrink-0 "+(on?"bg-blue-600 border-blue-600":"border-slate-300")}>{on?"✓":""}</span>{o}</button>})}</div>
+<div className="flex justify-between mt-7"><Btn v="s" disabled={i===0} onClick={()=>setI(i-1)}>Back</Btn><Btn disabled={a[i]===undefined} onClick={next}>{i===QS.length-1?"Finish Assessment":"Next"}</Btn></div></Card>
+<button onClick={()=>onDone(DEMO)} className="mt-4 text-sm text-slate-500 underline hover:text-blue-600">Skip: load Alex's demo results</button></div>}
+function Gaps({skills,pick}){
+const p=pct(skills),st=Object.keys(REQ).map(k=>status(REQ[k],skills[k]));const n=s=>st.filter(x=>x===s).length;
+const stats=[["Readiness",p+"%","text-blue-600"],["Strong",n("Strong"),"text-emerald-600"],["Developing",n("Developing"),"text-amber-600"],["Critical Gaps",n("Critical"),"text-rose-600"]];
+const pri=g=>g>=2?["High priority","text-rose-600"]:g===1?["Medium","text-amber-600"]:["On target","text-emerald-600"];
+return <div className="fade"><Title t="Your Skill Gap Analysis" s="See exactly what your target role requires compared with your current level."/>
+<div className="grid lg:grid-cols-3 gap-4 mb-4"><Card c="flex items-center gap-5"><Ring v={p} size={110}/><div><Eyebrow>Job Readiness</Eyebrow><p className="text-blue-600 font-semibold">{label(p)}</p></div></Card>
+<div className="lg:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-4">{stats.map(s=><Card key={s[0]}><p className={"text-3xl font-extrabold "+s[2]}>{s[1]}</p><p className="text-xs text-slate-500 mt-1">{s[0]}</p></Card>)}</div></div>
+<Card><div className="flex flex-wrap justify-between gap-2 mb-5"><h3 className="font-semibold text-navy-900">What the job requires → what you have → your gap</h3><div className="text-xs text-slate-500 flex gap-3"><span><i className="inline-block w-3 h-2 bg-slate-300 rounded mr-1"/>Required</span><span><i className="inline-block w-3 h-2 bg-blue-600 rounded mr-1"/>Current</span></div></div>
+<div className="divide-y divide-slate-100">{Object.keys(REQ).map(k=>{const g=Math.max(REQ[k]-skills[k],0),s=status(REQ[k],skills[k]),pr=pri(g);return <button key={k} onClick={()=>pick(k)} className={"w-full text-left py-4 px-3 -mx-3 rounded-xl hover:bg-slate-50 transition group "+(s==="Critical"?"bg-rose-50/60 border-l-4 border-rose-500":"")}>
+<div className="flex flex-wrap justify-between items-center gap-2 mb-2"><span className="font-semibold text-navy-900 group-hover:text-blue-600">{k} <span className="text-slate-300 group-hover:text-blue-600">›</span></span><span className="flex items-center gap-2 text-xs"><span className={"font-semibold "+pr[1]}>{pr[0]}</span><Badge s={s}/></span></div>
+<div className="space-y-1.5"><div className="flex items-center gap-2 text-xs text-slate-500"><span className="w-14">Required</span><div className="flex-1"><Prog v={REQ[k]*20} c="bg-slate-400" h="h-2"/></div><span className="w-8 text-right">{REQ[k]}/5</span></div><div className="flex items-center gap-2 text-xs text-slate-500"><span className="w-14">Current</span><div className="flex-1"><Prog v={skills[k]*20} c={COL[s]} h="h-2.5"/></div><span className="w-8 text-right font-semibold text-navy-900">{skills[k]}/5</span></div></div>
+<p className={"text-xs mt-2 font-semibold "+(g?(g>1?"text-rose-600":"text-amber-600"):"text-emerald-600")}>{g?"Gap: "+g+(g>1?" levels · priority skill":" level"):"No gap · on target"}</p></button>})}</div>
+<p className="text-xs text-slate-400 mt-3">Select a skill to see its action plan.</p></Card></div>}
+const GBar=({r,c,col})=>{const a=useMount(r*20),b=useMount(c*20);return <><div className="bar absolute h-full bg-slate-300 rounded-full" style={{width:a+"%"}}/><div className={"bar absolute h-full rounded-full "+col} style={{width:b+"%"}}/></>};
+
+function Detail({k,skills,add,added,go}){
+const r=REQ[k],c=skills[k],g=Math.max(r-c,0),s=status(r,c);
+const steps=["Learn "+k+" Fundamentals","Practice Core Concepts","Build a "+k+" Project","Integrate REST API","Complete Skill Verification"];
+return <div className="fade max-w-3xl"><button onClick={()=>go("Skill Gaps")} className="text-sm text-slate-500 hover:text-blue-600 mb-3">← Back to gaps</button>
+<div className="flex flex-wrap items-center gap-3 mb-6"><h1 className="text-3xl font-extrabold uppercase tracking-tight text-navy-900">{k}</h1><Badge s={s}/></div>
+<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">{[["Current Level",c+"/5"],["Required Level",r+"/5"],["Gap",g+" levels"],["Est. Learning Time",g?(g*5+1)+" days":"Maintain"]].map(x=><Card key={x[0]}><Eyebrow>{x[0]}</Eyebrow><p className="text-2xl font-extrabold mt-1 text-navy-900">{x[1]}</p></Card>)}</div>
+<div className="grid md:grid-cols-2 gap-4"><Card><Eyebrow>Why is this a gap?</Eyebrow><ul className="space-y-2 text-sm mt-3">{["Low assessment score","No "+k+" project evidence","Target role requires "+k+" proficiency"].map(x=><li key={x} className="flex gap-2"><span className="text-rose-500">●</span>{x}</li>)}</ul></Card>
+<Card><Eyebrow>How to close this gap</Eyebrow><ol className="space-y-3 text-sm mt-3">{steps.map((x,n)=><li key={n} className="flex gap-3 items-center"><span className="w-6 h-6 rounded-full bg-navy-900 text-cy-400 text-xs font-bold grid place-items-center shrink-0">{n+1}</span>{x}</li>)}</ol></Card></div>
+<div className="mt-5"><Btn onClick={()=>{add(k);go("Roadmap")}}>{added?"View in Roadmap":"Add to My Roadmap"}</Btn></div></div>}
+
+function Roadmap({skills,go,focus,st,rm}){
+const rd=skills.React>=4;
+const flags=[true,true,!!st.learn,!!st.practice,!!st.project,!!st.verified,!!st.verified];
+const now=flags.indexOf(false);
+const stages=[
+["Career Goal","Full-Stack Developer",[]],["Assess","8-question skill assessment",[]],
+["Learn","Close knowledge gaps",[["HTML/CSS","","done"],["JavaScript Basics","","done"],["React Fundamentals","5 days",rd?"done":"now"],["Spring Boot Fundamentals","5 days",rd?"now":"next"]]],
+["Practice","Apply skills in small exercises",[["React + REST API Integration","4 days",rd?"done":"next"]]],
+["Build","Ship evidence-worthy projects",[["Full-Stack Project","7 days",rd?"done":"next"]]],
+["Prove","Verify your skills",[["Final Skill Verification","",st.verified?"done":"next"]]],
+["Job Ready","Reach your readiness target",[]]];
+return <div className="fade max-w-2xl"><Title t="Your Personalized Roadmap" s="Your roadmap is generated from your largest skill gaps."/>
+<Card><ol>{stages.map((s,n)=>{const state=flags[n]?"done":n===now?"now":"next";return <li key={n} className="flex gap-4 relative pb-7 last:pb-0">
+{n<stages.length-1&&<span className={"absolute left-[15px] top-9 bottom-0 w-0.5 "+(flags[n]?"bg-emerald-400":"bg-slate-200")}/>}
+<span className={"w-8 h-8 rounded-full grid place-items-center text-xs font-bold shrink-0 z-[1] "+(state==="done"?"bg-emerald-500 text-white":state==="now"?"bg-blue-600 text-white ring-4 ring-blue-100":"bg-white border-2 border-slate-300 text-slate-400")}>{state==="done"?"✓":n+1}</span>
+<div className="flex-1"><div className="flex items-center gap-2"><p className={"font-semibold "+(state==="next"?"text-slate-500":"text-navy-900")}>{s[0]}</p><span className={"text-[10px] font-bold tracking-wider rounded px-1.5 py-0.5 "+(state==="done"?"text-emerald-700 bg-emerald-50":state==="now"?"text-blue-700 bg-blue-50":"text-slate-500 bg-slate-100")}>{state==="done"?"COMPLETED":state==="now"?"CURRENT":"UPCOMING"}</span></div><p className="text-xs text-slate-500">{s[1]}</p>
+{s[2].length>0&&<div className="mt-2 space-y-1.5">{s[2].map((d,m)=><button key={m} onClick={()=>go("Skill Proof")} className="w-full flex justify-between items-center text-sm px-3 py-2 rounded-lg bg-slate-50 hover:bg-blue-50 transition text-left"><span className={d[2]==="done"?"text-emerald-700":d[2]==="now"?"text-blue-700 font-medium":"text-slate-600"}>{d[2]==="done"?"✓ ":d[2]==="now"?"→ ":"○ "}{d[0]}</span><span className="text-xs text-slate-500">{d[1]}</span></button>)}</div>}</div></li>})}</ol></Card>
+<p className="text-sm text-slate-500 mt-4">Total estimated time: 21 days · {focus.length?"Focus skills: "+focus.join(", "):"Add skills from the gap dashboard."}</p>
+<Btn onClick={()=>go("Skill Proof")} c="mt-4">Start proving React</Btn></div>}
+
+function Proof({st,setSt,verify}){
+const [f,setF]=useState({n:"",d:"",g:""});
+const [err,setErr]=useState({});
+const stages=[["Learn","learn"],["Practice","practice"],["Project","project"],["Assessment","assess"]];
+const submit=()=>{
+const e={};
+if(!f.n.trim())e.n="Project name is required";
+if(!f.g.trim())e.g="GitHub or project URL is required";
+else if(!/^(https?:\/\/)?[^\s\/]+\.[^\s]+$/.test(f.g.trim()))e.g="Enter a valid URL, e.g. github.com/alex/shop-app";
+if(!f.d.trim())e.d="Project description is required";
+setErr(e);
+if(Object.keys(e).length)return;
+setSt({...st,learn:true,practice:true,project:{n:f.n.trim(),d:f.d.trim(),g:f.g.trim()},assess:true,verified:true});
+verify();};
+const conf=st.verified?"Verified":st.project?"Proficient":st.practice?"Developing":"Beginner";
+const flow=[["LEARN",st.learn],["PRACTICE",st.practice],["BUILD",st.project],["PROVE",st.verified]];
+const inp=k=>"w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 "+(err[k]?"border-rose-400":"border-slate-300");
+return <div className="fade max-w-3xl"><Title t="Prove Your Skills" s="Skills count when you can demonstrate them."/>
+<div className="grid grid-cols-4 gap-2 mb-4">{flow.map((x,n)=><div key={x[0]} className={"rounded-xl p-3 text-center transition "+(x[1]?"bg-navy-900 text-white":"bg-white border border-slate-200 text-slate-500")}><p className="text-[10px] tracking-widest opacity-70">STEP {n+1}</p><p className="text-sm font-bold">{x[1]?"✓ ":""}{x[0]}</p></div>)}</div>
+<Card><div className="flex flex-wrap justify-between items-center gap-2 mb-4"><div className="flex items-center gap-3"><h3 className="font-bold text-lg text-navy-900">React</h3><span className="text-xs text-slate-500">Project: <b className={st.project?"text-emerald-600":"text-slate-700"}>{st.project?"Completed":"Incomplete"}</b></span></div><span className="text-sm">Skill Confidence: <b className={st.verified?"text-emerald-600":"text-blue-600"}>{conf}</b></span></div>
+<div className="grid grid-cols-2 md:grid-cols-4 gap-3">{stages.map(s=><div key={s[1]} className={"rounded-xl border p-3 text-sm "+(st[s[1]]?"border-emerald-300 bg-emerald-50 text-emerald-800":"border-slate-200 text-slate-500")}><span className="mr-2">{st[s[1]]?"✓":"○"}</span>{s[0]}</div>)}</div></Card>
+{!st.project&&<Card c="mt-4"><h3 className="font-semibold mb-3 text-navy-900">Add your project</h3>
+<div className="mb-3"><input value={f.n} onChange={e=>setF({...f,n:e.target.value})} placeholder="Project name" className={inp("n")}/>{err.n&&<p className="text-xs text-rose-600 mt-1">{err.n}</p>}</div>
+<div className="mb-3"><input value={f.g} onChange={e=>setF({...f,g:e.target.value})} placeholder="GitHub / project URL" className={inp("g")}/>{err.g&&<p className="text-xs text-rose-600 mt-1">{err.g}</p>}</div>
+<div className="mb-3"><textarea value={f.d} onChange={e=>setF({...f,d:e.target.value})} rows={3} placeholder="Project description" className={inp("d")}/>{err.d&&<p className="text-xs text-rose-600 mt-1">{err.d}</p>}</div>
+<Btn type="button" onClick={submit}>Submit Project</Btn></Card>}
+{st.project&&<div className="mt-4 rounded-2xl overflow-hidden border border-emerald-300 shadow-sm fade"><div className="bg-emerald-600 text-white p-5 flex items-center gap-4"><span className="w-12 h-12 rounded-full bg-white/20 grid place-items-center"><Icon n="Skill Proof" c="w-7 h-7"/></span><div><p className="text-xs tracking-widest opacity-80">VERIFIED SKILL</p><p className="text-2xl font-extrabold">✓ React · Level 4/5</p></div></div>
+<div className="bg-white p-5"><p className="font-semibold text-emerald-700 mb-1">Project submitted successfully!</p><p className="text-xs text-slate-500 mb-3">Prototype verification based on the project evidence you submitted. It is not an external certification.</p><ul className="space-y-1 text-sm text-emerald-700 mb-4"><li>✓ Project Submitted</li><li>✓ Project Evidence Added</li><li>✓ Skill Verification Updated</li></ul>
+<div className="rounded-xl bg-slate-50 p-4 text-sm"><Eyebrow>Evidence</Eyebrow><p className="font-semibold mt-1 text-navy-900">{st.project.n}</p><p className="text-blue-600 text-xs break-all">{st.project.g}</p><p className="text-slate-600 mt-1">{st.project.d}</p></div></div></div>}</div>}
+
+function Ready({skills,base,setSkills,st,go}){
+const cur=pct(skills),d=cur-base;
+const m=[["Technical Skills",88],["Projects",82],["Problem Solving",84],["Tools & Workflow",86]];
+const fin=cur>=85;const sc=Object.keys(REQ).map(k=>status(REQ[k],skills[k]));
+return <div className="fade"><Title t="Job Readiness" s={fin?"Your gaps are closing. Keep proving.":"Complete your roadmap to raise your score."}/>
+<div className="grid lg:grid-cols-3 gap-4 mb-4"><Card c="flex items-center gap-5"><Ring v={cur} size={140}/><div><Eyebrow>Job Readiness</Eyebrow><p className="text-blue-600 font-semibold mt-1">{label(cur)}</p></div></Card>
+<Card c="lg:col-span-2"><div className="grid grid-cols-3 gap-3 text-center">{[["Previous",base+"%"],["Current",cur+"%"],["Improvement",(d>=0?"+":"")+d+"%"]].map((x,n)=><div key={x[0]} className={n===2?"rounded-xl bg-emerald-50":""}><Eyebrow>{x[0]}</Eyebrow><p className={"text-3xl font-extrabold mt-1 "+(n===2?"text-emerald-600":"text-navy-900")}>{x[1]}</p></div>)}</div>
+<div className="mt-5 space-y-3">{m.map(x=><div key={x[0]}><div className="flex justify-between text-sm mb-1"><span>{x[0]}</span><span className="font-semibold">{fin?x[1]:Math.round(x[1]*cur/86)}%</span></div><Prog v={fin?x[1]:x[1]*cur/86} c="bg-cy-500"/></div>)}</div></Card></div>
+<div className="grid grid-cols-3 gap-4 mb-4">{[["Skills Verified",sc.filter(x=>x==="Strong").length,"text-emerald-600"],["Developing",sc.filter(x=>x==="Developing").length,"text-amber-600"],["Critical Gaps",sc.filter(x=>x==="Critical").length,"text-rose-600"]].map(x=><Card key={x[0]} hv><p className={"text-3xl font-extrabold "+x[2]}>{x[1]}</p><p className="text-xs text-slate-500">{x[0]}</p></Card>)}</div>
+<Card c="!bg-navy-900 !border-navy-800 text-white"><Eyebrow><span className="text-cy-400">NEXT BEST ACTION</span></Eyebrow><p className="text-lg font-semibold mt-1">Complete Spring Boot API Integration Project</p><button onClick={()=>go("Roadmap")} className="mt-3 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-500 transition">Continue Roadmap</button></Card>
+{!fin&&<Btn v="s" c="mt-4" onClick={()=>setSkills(FINAL)}>Re-assess after completing roadmap (demo)</Btn>}</div>}
+
+function Profile({user,setUser,skills,p,mode}){
+const [edit,setEdit]=useState(false);
+const keys=["name","email","college","degree","year","role","goal"];
+const comp=Math.round(keys.filter(k=>String(user[k]||"").trim()).length/keys.length*100);
+const ks=Object.keys(REQ),c=x=>ks.filter(k=>status(REQ[k],skills[k])===x).length;
+const sec=(t,rows)=><Card hv><Eyebrow>{t}</Eyebrow><dl className="mt-3 space-y-2.5 text-sm">{rows.map(r=><div key={r[0]} className="flex justify-between gap-4"><dt className="text-slate-500">{r[0]}</dt><dd className="font-medium text-right text-navy-900">{r[1]||"Not added"}</dd></div>)}</dl></Card>;
+if(edit)return <div className="fade max-w-3xl"><Title t="Edit Profile" s="Changes update the whole prototype, including your target role."/><Card><ProfileForm init={user} label="Save Changes" onCancel={()=>setEdit(false)} onSubmit={u=>{setUser(u);setEdit(false)}}/></Card></div>;
+return <div className="fade max-w-4xl"><div className="flex flex-wrap justify-between items-end gap-3 mb-6"><Title t="Profile"/>{mode==="guest"&&<span className="text-[10px] font-bold tracking-wider text-cy-500 bg-cy-500/10 rounded px-2 py-1 mb-7">DEMO MODE</span>}</div>
+<Card c="flex flex-wrap items-center gap-5 mb-4"><Avatar name={user.name} c="w-16 h-16 text-2xl"/><div className="flex-1 min-w-[200px]"><p className="text-xl font-extrabold text-navy-900">{user.name}</p><p className="text-sm text-slate-600">{user.degree} · {user.year}</p><p className="text-sm text-slate-500">{user.college}</p><p className="text-sm mt-2"><span className="text-slate-500">Target Role:</span> <b>{user.role}</b></p><p className="text-sm"><span className="text-slate-500">Career Goal:</span> <b>{user.goal}</b></p></div><Btn onClick={()=>setEdit(true)}>Edit Profile</Btn></Card>
+<div className="grid sm:grid-cols-2 gap-4 mb-4"><Card><Eyebrow>Career Readiness</Eyebrow><p className="text-4xl font-extrabold text-blue-600 mt-1">{p}%</p><div className="mt-3"><Prog v={p}/></div></Card><Card><Eyebrow>Profile Completion</Eyebrow><p className="text-4xl font-extrabold text-cy-500 mt-1">{comp}%</p><div className="mt-3"><Prog v={comp} c="bg-cy-500"/></div></Card></div>
+<div className="grid sm:grid-cols-2 gap-4">{sec("Personal Details",[["Name",user.name],["Email",user.email]])}{sec("Education",[["College",user.college],["Degree",user.degree],["Year",user.year]])}{sec("Career Goal",[["Target Role",user.role],["Career Goal",user.goal]])}{sec("Skills",[["Strong Skills",c("Strong")],["Developing Skills",c("Developing")],["Critical Gaps",c("Critical")]])}</div></div>}
+function App(){
+const [page,setPage]=useState("Welcome");
+const [user,setUser]=useState(()=>rd("sb_profile")||DEMO_USER);const [mode,setMode]=useState("guest");const [pre,setPre]=useState("");
+const role=user.role;const setRole=r=>setUser(u=>({...u,role:r}));
+useEffect(()=>{if(mode==="user")wr("sb_profile",user)},[user,mode]);
+useEffect(()=>{wr("sb_mode",mode)},[mode]);
+const [skills,setSkills]=useState(DEMO);const [sel,setSel]=useState(null);const [focus,setFocus]=useState([]);
+const [st,setSt]=useState({});const [menu,setMenu]=useState(false);
+const go=(p,x)=>{if(p==="Signup")setPre(x||"");setPage(p);setMenu(false);window.scrollTo(0,0)};
+const guest=()=>{setUser(DEMO_USER);setMode("guest");go("Dashboard")};
+const enter=u=>{setUser(u);setMode("user");wr("sb_profile",u);go("Dashboard")};
+if(page==="Welcome")return <Welcome go={go} guest={guest}/>;
+if(page==="Login")return <Login go={go} guest={guest} onLogin={enter}/>;
+if(page==="Signup")return <Signup go={go} email={pre} guest={guest} onCreate={enter}/>;
+if(page==="Landing")return <Landing go={go}/>;
+const rm=skills.React>=4?5:2;
+const body=()=>{
+if(page==="Skill Detail")return <Detail k={sel} skills={skills} go={go} added={focus.includes(sel)} add={k=>setFocus(f=>f.includes(k)?f:[...f,k])}/>;
+switch(page){
+case "Dashboard":return <Dash skills={skills} go={go} st={st} rm={rm} user={user}/>;
+case "Career Goal":return <Goal role={role} setRole={setRole} go={go}/>;
+case "Skill Assessment":return <Assess onDone={s=>{setSkills(s);go("Skill Gaps")}}/>;
+case "Skill Gaps":return <Gaps skills={skills} pick={k=>{setSel(k);setPage("Skill Detail")}}/>;
+case "Roadmap":return <Roadmap skills={skills} go={go} focus={focus} st={st} rm={rm}/>;
+case "Skill Proof":return <Proof st={st} setSt={setSt} verify={()=>setSkills(s=>({...s,React:4}))}/>;
+case "Job Readiness":return <Ready skills={skills} base={64} setSkills={setSkills} st={st} go={go}/>;
+default:return <Profile user={user} setUser={setUser} skills={skills} p={pct(skills)} mode={mode}/>}};
+const p=pct(skills);
+const demo=mode==="guest"&&<span className="text-[10px] font-bold tracking-wider text-cy-400 border border-cy-400/40 rounded px-1.5 py-0.5">DEMO MODE</span>;
+const prof=<div className="mx-3 mb-3"><button onClick={()=>go("Profile")} className={"w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition "+(page==="Profile"?"bg-blue-600":"hover:bg-navy-800")}><Avatar name={user.name}/><span className="min-w-0"><span className="block text-sm font-semibold text-white truncate">{user.name}</span><span className="block text-xs text-slate-400 truncate">{user.role}</span></span></button><button onClick={()=>go("Welcome")} className="mt-1 ml-2 text-[11px] text-slate-400 hover:text-white">{mode==="guest"?"Exit demo":"Sign out"}</button></div>;
+const nav=<nav className="px-3 space-y-1">{NAV.map(n=>{const on=page===n||(page==="Skill Detail"&&n==="Skill Gaps");return <button key={n} onClick={()=>go(n)} className={"w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition "+(on?"bg-blue-600 text-white shadow":"text-slate-300 hover:bg-navy-800 hover:text-white")}><Icon n={n}/>{n}</button>})}</nav>;
+const foot=<div className="m-3 p-4 rounded-xl bg-navy-800"><p className="text-[10px] tracking-widest text-cy-400 font-semibold">CAREER GOAL</p><p className="text-sm font-semibold text-white mt-1">{role}</p><div className="mt-3"><Prog v={p} c="bg-cy-500" h="h-1.5"/></div><p className="text-xs text-slate-400 mt-1.5">{p}% job-ready</p></div>;
+return <div className="min-h-screen md:flex">
+<aside className="hidden md:flex flex-col w-64 bg-navy-900 shrink-0 sticky top-0 h-screen"><button onClick={()=>go("Landing")} className="px-6 pt-6 pb-2 text-left"><Logo light/></button><div className="px-6 pb-4">{demo}</div><div className="flex-1 overflow-y-auto">{nav}</div>{foot}{prof}</aside>
+<div className="md:hidden flex justify-between items-center bg-navy-900 px-4 py-3 sticky top-0 z-10"><span className="flex items-center gap-2"><Logo light/>{demo}</span><button onClick={()=>setMenu(!menu)} className="text-sm text-white">{menu?"Close":"Menu"}</button></div>
+{menu&&<div className="md:hidden bg-navy-900 pb-2">{nav}{foot}{prof}</div>}
+<main className="flex-1 min-w-0 p-5 md:p-10 max-w-6xl">{body()}</main></div>}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
